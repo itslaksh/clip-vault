@@ -21,6 +21,16 @@ app.use(cors());
 app.use(express.json());
 
 const getVideoInfo = async (url) => {
+    let cookiesPath;
+
+    if (url.includes('youtube.com')) {
+        cookiesPath = path.join(__dirname, 'cookies', 'youtube-cookies.txt');
+    } else if (url.includes('twitter.com')) {
+        cookiesPath = path.join(__dirname, 'cookies', 'twitter-cookies.txt');
+    } else if (url.includes('reddit.com')) {
+        cookiesPath = path.join(__dirname, 'cookies', 'reddit-cookies.txt');
+    }
+
     try {
         const info = await ytdlp(url, {
             dumpSingleJson: true,
@@ -28,6 +38,7 @@ const getVideoInfo = async (url) => {
             noCallHome: true,
             noCheckCertificate: true,
             youtubeSkipDashManifest: true,
+            cookies: cookiesPath,
         });
         return info;
     } catch (error) {
