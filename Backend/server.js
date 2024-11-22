@@ -85,6 +85,11 @@ app.get('/video-details', async (req, res) => {
 });
 
 app.get('/download', async (req, res) => {
+    const { url } = req.query;
+    if (!url) {
+        return res.status(400).json({ error: 'URL is required' });
+    }
+
     let cookiesPath;
     if (url.match(/youtube\.com|youtu\.be/)) {
         cookiesPath = path.join(__dirname, 'cookies', 'youtube-cookies.txt');
@@ -94,11 +99,6 @@ app.get('/download', async (req, res) => {
         cookiesPath = path.join(__dirname, 'cookies', 'reddit-cookies.txt');
     }
 
-    const { url } = req.query;
-    if (!url) {
-        return res.status(400).json({ error: 'URL is required' });
-    }
-
     const uniqueId = uuidv4();
     const outputFileName = `video_${uniqueId}.mp4`;
     const outputFilePath = path.join(TEMP_DOWNLOAD_DIR, outputFileName);
@@ -106,7 +106,7 @@ app.get('/download', async (req, res) => {
     try {
         await ytdlp(url, {
             output: path.join(TEMP_DOWNLOAD_DIR, `video_${uniqueId}.%(ext)s`),
-            format: 'bestvideo+bestaudio/best', // Allow separate streams
+            format: 'bestvideo+bestaudio/best',
             mergeOutputFormat: 'mp4',
             noWarnings: true,
             noCallHome: true,
@@ -132,6 +132,7 @@ app.get('/download', async (req, res) => {
         res.status(500).json({ error: 'Failed to download video' });
     }
 });
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
