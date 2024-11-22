@@ -85,6 +85,15 @@ app.get('/video-details', async (req, res) => {
 });
 
 app.get('/download', async (req, res) => {
+    let cookiesPath;
+    if (url.match(/youtube\.com|youtu\.be/)) {
+        cookiesPath = path.join(__dirname, 'cookies', 'youtube-cookies.txt');
+    } else if (url.includes('x.com')) {
+        cookiesPath = path.join(__dirname, 'cookies', 'twitter-cookies.txt');
+    } else if (url.includes('reddit.com')) {
+        cookiesPath = path.join(__dirname, 'cookies', 'reddit-cookies.txt');
+    }
+
     const { url } = req.query;
     if (!url) {
         return res.status(400).json({ error: 'URL is required' });
@@ -102,6 +111,7 @@ app.get('/download', async (req, res) => {
             noWarnings: true,
             noCallHome: true,
             noCheckCertificate: true,
+            cookies: cookiesPath,
         });
 
         if (!fs.existsSync(outputFilePath)) {
