@@ -28,6 +28,7 @@ const getVideoInfo = async (url) => {
             noCallHome: true,
             noCheckCertificate: true,
             youtubeSkipDashManifest: true,
+            cookies: path.join(__dirname, 'cookies', 'youtube-cookies.txt'),
         });
         return info;
     } catch (error) {
@@ -93,6 +94,7 @@ app.get('/download', async (req, res) => {
             noWarnings: true,
             noCallHome: true,
             noCheckCertificate: true,
+            cookies: path.join(__dirname, 'cookies', 'youtube-cookies.txt'),
         });
 
         if (!fs.existsSync(outputFilePath)) {
