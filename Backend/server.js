@@ -28,7 +28,6 @@ const getVideoInfo = async (url) => {
             noCallHome: true,
             noCheckCertificate: true,
             youtubeSkipDashManifest: true,
-            cookies: path.join(__dirname, 'cookies', 'youtube-cookies.txt'),
         });
         return info;
     } catch (error) {
@@ -49,10 +48,8 @@ app.get('/video-details', async (req, res) => {
 
         const { title, thumbnails, formats } = videoInfo;
 
-        // Get the highest resolution thumbnail
         const bestThumbnail = thumbnails?.sort((a, b) => (b.width || 0) - (a.width || 0))[0]?.url || '';
 
-        // Include all formats, including separate audio and video streams
         const availableFormats = formats
             .map((format) => ({
                 itag: format.itag,
@@ -94,7 +91,6 @@ app.get('/download', async (req, res) => {
             noWarnings: true,
             noCallHome: true,
             noCheckCertificate: true,
-            cookies: path.join(__dirname, 'cookies', 'youtube-cookies.txt'),
         });
 
         if (!fs.existsSync(outputFilePath)) {
