@@ -24,7 +24,7 @@ const Home = () => {
     setVideoInfo(null);
 
     try {
-      const response = await fetch(` http://localhost:5000/video-details?url=${inputLink}`);
+      const response = await fetch(` https://clip-vault.onrender.com/video-details?url=${inputLink}`);
       if (!response.ok) throw new Error('Failed to fetch video details');
       const data = await response.json();
       setVideoInfo(data);

@@ -10,7 +10,7 @@ const DownClip = ({ videoInfo }) => {
     const handleDownload = async () => {
         setIsDownloading(true);
         try {
-            const response = await fetch(` http://localhost:5000/download?url=${videoUrl}`, {
+            const response = await fetch(` https://clip-vault.onrender.com/download?url=${videoUrl}`, {
                 method: 'GET',
             });
             const blob = await response.blob();
