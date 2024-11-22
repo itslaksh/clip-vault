@@ -23,9 +23,9 @@ app.use(express.json());
 const getVideoInfo = async (url) => {
     let cookiesPath;
 
-    if (url.includes('youtube.com')) {
+    if (url.match(/youtube\.com|youtu\.be/)) {
         cookiesPath = path.join(__dirname, 'cookies', 'youtube-cookies.txt');
-    } else if (url.includes('twitter.com')) {
+    } else if (url.includes('x.com')) {
         cookiesPath = path.join(__dirname, 'cookies', 'twitter-cookies.txt');
     } else if (url.includes('reddit.com')) {
         cookiesPath = path.join(__dirname, 'cookies', 'reddit-cookies.txt');
