@@ -15,6 +15,25 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = 5000;
 
+// Create cookies directory if it doesn't exist
+const cookiesDir = path.join(__dirname, 'cookies');
+if (!fs.existsSync(cookiesDir)) {
+    fs.mkdirSync(cookiesDir);
+}
+
+// Write cookies from environment variables into files
+const writeCookieFile = (filename, content) => {
+    const filePath = path.join(cookiesDir, filename);
+    if (content && !fs.existsSync(filePath)) {
+        fs.writeFileSync(filePath, content);
+    }
+};
+
+// Get cookie content from environment variables and write to files
+writeCookieFile('youtube-cookies.txt', process.env.YOUTUBE_COOKIES_CONTENT);
+writeCookieFile('twitter-cookies.txt', process.env.TWITTER_COOKIES_CONTENT);
+writeCookieFile('reddit-cookies.txt', process.env.REDDIT_COOKIES_CONTENT);
+
 const TEMP_DOWNLOAD_DIR = path.join(__dirname, 'temp');
 if (!fs.existsSync(TEMP_DOWNLOAD_DIR)) {
     fs.mkdirSync(TEMP_DOWNLOAD_DIR);
@@ -26,12 +45,13 @@ app.use(express.json());
 const getVideoInfo = async (url) => {
     let cookiesPath;
 
+    // Determine which cookie file to use based on the URL
     if (url.match(/youtube\.com|youtu\.be/)) {
-        cookiesPath = process.env.YOUTUBE_COOKIES;
+        cookiesPath = path.join(cookiesDir, 'youtube-cookies.txt');
     } else if (url.includes('x.com')) {
-        cookiesPath = process.env.TWITTER_COOKIES;
+        cookiesPath = path.join(cookiesDir, 'twitter-cookies.txt');
     } else if (url.includes('reddit.com')) {
-        cookiesPath = process.env.REDDIT_COOKIES;
+        cookiesPath = path.join(cookiesDir, 'reddit-cookies.txt');
     }
 
     try {
@@ -41,7 +61,7 @@ const getVideoInfo = async (url) => {
             noCallHome: true,
             noCheckCertificate: true,
             youtubeSkipDashManifest: true,
-            cookies: cookiesPath,
+            cookies: cookiesPath, // Use the cookies file path
         });
         return info;
     } catch (error) {
@@ -93,12 +113,13 @@ app.get('/download', async (req, res) => {
     }
 
     let cookiesPath;
+    // Determine which cookie file to use based on the URL
     if (url.match(/youtube\.com|youtu\.be/)) {
-        cookiesPath = process.env.YOUTUBE_COOKIES;
+        cookiesPath = path.join(cookiesDir, 'youtube-cookies.txt');
     } else if (url.includes('x.com')) {
-        cookiesPath = process.env.TWITTER_COOKIES;
+        cookiesPath = path.join(cookiesDir, 'twitter-cookies.txt');
     } else if (url.includes('reddit.com')) {
-        cookiesPath = process.env.REDDIT_COOKIES;
+        cookiesPath = path.join(cookiesDir, 'reddit-cookies.txt');
     }
 
     const uniqueId = uuidv4();
@@ -113,7 +134,7 @@ app.get('/download', async (req, res) => {
             noWarnings: true,
             noCallHome: true,
             noCheckCertificate: true,
-            cookies: cookiesPath,
+            cookies: cookiesPath, // Use the cookies file path
         });
 
         if (!fs.existsSync(outputFilePath)) {
