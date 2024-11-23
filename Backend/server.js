@@ -5,6 +5,9 @@ import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,11 +27,11 @@ const getVideoInfo = async (url) => {
     let cookiesPath;
 
     if (url.match(/youtube\.com|youtu\.be/)) {
-        cookiesPath = path.join(__dirname, 'cookies', 'youtube-cookies.txt');
+        cookiesPath = process.env.YOUTUBE_COOKIES;
     } else if (url.includes('x.com')) {
-        cookiesPath = path.join(__dirname, 'cookies', 'twitter-cookies.txt');
+        cookiesPath = process.env.TWITTER_COOKIES;
     } else if (url.includes('reddit.com')) {
-        cookiesPath = path.join(__dirname, 'cookies', 'reddit-cookies.txt');
+        cookiesPath = process.env.REDDIT_COOKIES;
     }
 
     try {
@@ -46,7 +49,6 @@ const getVideoInfo = async (url) => {
         throw new Error('Failed to fetch video info');
     }
 };
-
 
 app.get('/video-details', async (req, res) => {
     const { url } = req.query;
@@ -92,11 +94,11 @@ app.get('/download', async (req, res) => {
 
     let cookiesPath;
     if (url.match(/youtube\.com|youtu\.be/)) {
-        cookiesPath = path.join(__dirname, 'cookies', 'youtube-cookies.txt');
+        cookiesPath = process.env.YOUTUBE_COOKIES;
     } else if (url.includes('x.com')) {
-        cookiesPath = path.join(__dirname, 'cookies', 'twitter-cookies.txt');
+        cookiesPath = process.env.TWITTER_COOKIES;
     } else if (url.includes('reddit.com')) {
-        cookiesPath = path.join(__dirname, 'cookies', 'reddit-cookies.txt');
+        cookiesPath = process.env.REDDIT_COOKIES;
     }
 
     const uniqueId = uuidv4();
@@ -133,7 +135,6 @@ app.get('/download', async (req, res) => {
     }
 });
 
-
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is Live!`);
 });
