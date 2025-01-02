@@ -21,7 +21,7 @@ const Footer = () => {
                             href="https://github.com/itslaksh"
                             className="ml-1 underline-offset-4 hover:underline text-white font-semibold dark:text-black"
                         >
-                            itslaksh
+                            Lakshay
                         </a>
                     </span>                    {/* <a href="/about" className="text-white dark:hover:text-dark-HoverGreen dark:text-black hover:text-light-Purple transition-all">About</a>
                     <a href="/contact" className="text-white dark:hover:text-dark-HoverGreen dark:text-black hover:text-light-Purple transition-all">Contact</a>
