@@ -39,9 +39,9 @@ const Footer = () => {
                     {/* <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
                         <i className="fab fa-twitter text-white text-xl dark:text-black hover:text-dark-HoverGreen transition-all"></i>
                     </a> */}
-                    <a href="https://www.instagram.com/yugen._.san/" target="_blank" rel="noopener noreferrer">
+                    {/* <a href="https://www.instagram.com/yugen._.san/" target="_blank" rel="noopener noreferrer">
                         <i className="fab fa-instagram text-white text-xl dark:text-black hover:text-dark-HoverGreen transition-all"></i>
-                    </a>
+                    </a> */}
                     <a href="https://www.linkedin.com/in/itslaksh/" target="_blank" rel="noopener noreferrer">
                         <i className="fab fa-linkedin text-white text-xl dark:text-black hover:text-dark-HoverGreen transition-all"></i>
                     </a>
