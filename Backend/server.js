@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import puppeteer from 'puppeteer'; // Add Puppeteer
+import ytdlp from 'yt-dlp-exec';
 import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
@@ -23,36 +23,56 @@ if (!fs.existsSync(TEMP_DOWNLOAD_DIR)) {
 app.use(cors());
 app.use(express.json());
 
-// Puppeteer function to fetch video URL
-const fetchVideoUrlWithPuppeteer = async (url) => {
-    const browser = await puppeteer.launch({ headless: true });
-    const page = await browser.newPage();
-
+const getVideoInfo = async (url) => {
     try {
-        console.log(`Navigating to ${url}...`);
-        await page.goto(url, { waitUntil: 'networkidle2' });
-
-        // Example: Extract video URL (adjust selector based on the site)
-        const videoUrl = await page.evaluate(() => {
-            const videoElement = document.querySelector('video');
-            return videoElement ? videoElement.src : null;
+        const info = await ytdlp(url, {
+            dumpSingleJson: true,
+            noWarnings: true,
+            noCallHome: true,
+            noCheckCertificate: true,
+            youtubeSkipDashManifest: true,
         });
-
-        if (!videoUrl) {
-            throw new Error('Failed to extract video URL.');
-        }
-
-        console.log(`Extracted video URL: ${videoUrl}`);
-        return videoUrl;
+        return info;
     } catch (error) {
-        console.error('Error fetching video URL:', error.message);
-        throw error;
-    } finally {
-        await browser.close();
+        console.error('Error fetching video info:', error);
+        throw new Error('Failed to fetch video info');
     }
 };
 
-// Updated /download endpoint
+app.get('/video-details', async (req, res) => {
+    const { url } = req.query;
+    if (!url) {
+        return res.status(400).json({ error: 'URL is required' });
+    }
+
+    try {
+        const videoInfo = await getVideoInfo(url);
+        const { title, thumbnails, formats } = videoInfo;
+
+        const bestThumbnail = thumbnails?.sort((a, b) => (b.width || 0) - (a.width || 0))[0]?.url || '';
+
+        const availableFormats = formats
+            .map((format) => ({
+                itag: format.itag,
+                quality: format.qualityLabel || `${format.height}p`,
+                ext: format.ext,
+                hasVideo: format.vcodec !== 'none',
+                hasAudio: format.acodec !== 'none',
+                url: format.url,
+            }))
+            .sort((a, b) => parseInt(b.quality) - parseInt(a.quality));
+
+        res.json({
+            title,
+            thumbnail: bestThumbnail,
+            videoUrl: videoInfo.webpage_url,
+            formats: availableFormats,
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch video details' });
+    }
+});
+
 app.get('/download', async (req, res) => {
     const { url } = req.query;
     if (!url) {
@@ -64,29 +84,27 @@ app.get('/download', async (req, res) => {
     const outputFilePath = path.join(TEMP_DOWNLOAD_DIR, outputFileName);
 
     try {
-        // Fetch the video URL using Puppeteer
-        const videoUrl = await fetchVideoUrlWithPuppeteer(url);
-
-        // Download the video using the fetched URL
-        const response = await fetch(videoUrl);
-        const fileStream = fs.createWriteStream(outputFilePath);
-        response.body.pipe(fileStream);
-
-        fileStream.on('finish', () => {
-            res.setHeader('Content-Disposition', `attachment; filename=${outputFileName}`);
-            res.setHeader('Content-Type', 'video/mp4');
-
-            const readStream = fs.createReadStream(outputFilePath);
-            readStream.pipe(res);
-
-            readStream.on('close', () => {
-                fs.unlinkSync(outputFilePath);
-            });
+        await ytdlp(url, {
+            output: path.join(TEMP_DOWNLOAD_DIR, `video_${uniqueId}.%(ext)s`),
+            format: 'bestvideo+bestaudio/best',
+            mergeOutputFormat: 'mp4',
+            noWarnings: true,
+            noCallHome: true,
+            noCheckCertificate: true,
         });
 
-        fileStream.on('error', (error) => {
-            console.error('Error writing video file:', error.message);
-            res.status(500).json({ error: 'Failed to download video' });
+        if (!fs.existsSync(outputFilePath)) {
+            return res.status(404).json({ error: 'Failed to combine video and audio' });
+        }
+
+        res.setHeader('Content-Disposition', `attachment; filename=${outputFileName}`);
+        res.setHeader('Content-Type', 'video/mp4');
+
+        const readStream = fs.createReadStream(outputFilePath);
+        readStream.pipe(res);
+
+        readStream.on('close', () => {
+            fs.unlinkSync(outputFilePath);
         });
     } catch (error) {
         res.status(500).json({ error: 'Failed to download video' });
